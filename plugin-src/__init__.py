@@ -30,7 +30,7 @@ class Biblioman(Source):
     name = 'Biblioman'
     description = _('Downloads metadata and covers from biblioman.chitanka.info')
     supported_platforms = ['windows', 'osx', 'linux']
-    author = 'OpenAI Codex'
+    author = 'Edin User'
     version = (0, 1, 0)
     minimum_calibre_version = (6, 0, 0)
 
