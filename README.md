@@ -9,7 +9,7 @@
 - Latest release: `https://github.com/EdinUser/biblioman-calibre/releases/latest`
 - Директен файл в хранилището: [`dist/BibliomanMetadata.zip`](dist/BibliomanMetadata.zip)
 
-За повечето хора страницата с latest release е най-удобният вариант, защото винаги сочи към последната готова версия на плъгина.
+Страницата с latest release води до последното издание на проекта в GitHub. Самият zip файл на плъгина е в секцията с файловете към това издание.
 
 ## Какво прави плъгинът
 
@@ -70,7 +70,7 @@ dist/BibliomanMetadata.zip
 1. Отворете `Preferences`.
 2. Отворете `Plugins`.
 3. Изберете `Load plugin from file`.
-4. Изтеглете последния zip файл от `https://github.com/EdinUser/biblioman-calibre/releases/latest` или използвайте [`dist/BibliomanMetadata.zip`](dist/BibliomanMetadata.zip).
+4. Отворете `https://github.com/EdinUser/biblioman-calibre/releases/latest` и изтеглете zip файла на плъгина от файловете към изданието, или използвайте [`dist/BibliomanMetadata.zip`](dist/BibliomanMetadata.zip).
 5. Изберете изтегления zip файл в Calibre.
 6. Рестартирайте Calibre.
 7. Ако е нужно, включете `Biblioman` сред източниците за метаданни.
