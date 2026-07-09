@@ -1,57 +1,57 @@
-# Biblioman Metadata Source Plugin For Calibre
+# Biblioman плъгин за Calibre
 
-`biblioman-calibre` is a Calibre metadata download plugin for `https://biblioman.chitanka.info`.
+`biblioman-calibre` е плъгин за Calibre, който изтегля метаданни и корици от `https://biblioman.chitanka.info`.
 
-It lets Calibre fetch structured book metadata and cover images from Biblioman, a Bulgarian book catalog maintained by Chitanka. The plugin uses Biblioman's public JSON endpoints instead of scraping HTML, which makes lookups more stable and easier to maintain.
+С него Calibre може да намира структурирани данни за книги от Biblioman, каталога за книги на Читанка. Плъгинът използва публичните JSON адреси на Biblioman, а не HTML страниците, което прави търсенето по-стабилно и по-лесно за поддръжка.
 
-## Download
+## Изтегляне
 
 - Latest release: `https://github.com/EdinUser/biblioman-calibre/releases/latest`
-- Direct plugin file in this repository: [`dist/BibliomanMetadata.zip`](dist/BibliomanMetadata.zip)
+- Директен файл в хранилището: [`dist/BibliomanMetadata.zip`](dist/BibliomanMetadata.zip)
 
-For most users, the latest GitHub release page is the best download entry point because it always points to the newest packaged plugin version.
+За повечето хора страницата с latest release е най-удобният вариант, защото винаги сочи към последната готова версия на плъгина.
 
-## What This Plugin Does
+## Какво прави плъгинът
 
-- searches Biblioman by Biblioman ID, ISBN, title, or title plus first author
-- imports title, authors, publisher, publication year, ISBN, comments, tags, and series data
-- downloads cover images from Biblioman
-- stores a custom `biblioman` identifier in Calibre
+- търси в Biblioman по Biblioman ID, ISBN, заглавие или заглавие плюс първи автор
+- попълва заглавие, автори, издател, година на издаване, ISBN, анотация, тагове и поредица
+- изтегля корици от Biblioman
+- записва допълнителен идентификатор `biblioman` в Calibre
 
-## Metadata Fields
+## Какви данни попълва
 
-The plugin currently maps these Biblioman fields into Calibre:
+В момента плъгинът подава към Calibre следните полета:
 
 - title
 - authors
 - publisher
-- publication year as `pubdate`
+- publication year като `pubdate`
 - ISBN
-- comments from the annotation
-- tags from genre, themes, and category
-- series or sequence
+- comments от анотацията
+- tags от жанр, теми и категория
+- series или sequence
 - cover image
-- custom identifier `biblioman`
+- допълнителен идентификатор `biblioman`
 
-## Data Source
+## Източник на данните
 
-The plugin uses Biblioman's public API-style JSON endpoints:
+Плъгинът използва публичните JSON адреси на Biblioman:
 
 - `GET /books/{id}.json`
 - `GET /books.json?q=...`
 
-This repository is useful if you are looking for:
+Това хранилище е полезно, ако търсите:
 
-- a Calibre plugin for Bulgarian books
-- a Biblioman metadata source plugin
-- a Chitanka Biblioman cover download plugin
-- a Python example of a Calibre metadata source plugin
+- Calibre plugin for Bulgarian books
+- Biblioman metadata source plugin
+- Chitanka Biblioman cover download plugin
+- Python пример за Calibre metadata source plugin
 
-## Project Layout
+## Структура на проекта
 
-- `plugin-src/__init__.py` - Calibre plugin source
-- `build-plugin.sh` - builds the installable plugin zip
-- `dist/BibliomanMetadata.zip` - packaged plugin artifact
+- `plugin-src/__init__.py` - изходният код на плъгина
+- `build-plugin.sh` - прави готовия zip файл за инсталиране
+- `dist/BibliomanMetadata.zip` - готовият файл за инсталиране в Calibre
 
 ## Build
 
@@ -59,24 +59,24 @@ This repository is useful if you are looking for:
 ./build-plugin.sh
 ```
 
-Build output:
+Резултатът е:
 
 ```text
 dist/BibliomanMetadata.zip
 ```
 
-## Install In Calibre
+## Инсталиране в Calibre
 
-1. Open `Preferences`.
-2. Open `Plugins`.
-3. Choose `Load plugin from file`.
-4. Download the latest plugin zip from `https://github.com/EdinUser/biblioman-calibre/releases/latest` or use [`dist/BibliomanMetadata.zip`](dist/BibliomanMetadata.zip).
-5. Select the downloaded zip file in Calibre.
-6. Restart Calibre.
-7. Enable `Biblioman` in the metadata download sources if needed.
+1. Отворете `Preferences`.
+2. Отворете `Plugins`.
+3. Изберете `Load plugin from file`.
+4. Изтеглете последния zip файл от `https://github.com/EdinUser/biblioman-calibre/releases/latest` или използвайте [`dist/BibliomanMetadata.zip`](dist/BibliomanMetadata.zip).
+5. Изберете изтегления zip файл в Calibre.
+6. Рестартирайте Calibre.
+7. Ако е нужно, включете `Biblioman` сред източниците за метаданни.
 
-## Notes
+## Бележки
 
-- Biblioman metadata is primarily in Bulgarian.
-- Language mapping is intentionally conservative.
-- `dist/BibliomanMetadata.zip` is the packaged plugin file for direct installation in Calibre.
+- Данните в Biblioman са основно на български.
+- Мапването на езиците е умишлено по-консервативно.
+- `dist/BibliomanMetadata.zip` е файлът за директно инсталиране в Calibre.
