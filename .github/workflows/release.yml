@@ -1,0 +1,31 @@
+name: Release plugin
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  attach-plugin-zip:
+    name: Attach plugin zip
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Build versioned plugin zip
+        run: ./build-plugin.sh "${{ github.event.release.tag_name }}"
+
+      - name: Attach zip to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.event.release.tag_name }}
+        run: |
+          version="${TAG_NAME#v}"
+          gh release upload "${TAG_NAME}" "dist/BibliomanMetadata-${version}.zip" --clobber
