@@ -25,12 +25,7 @@ from calibre.ebooks.metadata.sources.base import Source
 from calibre.utils.localization import _
 
 
-__version__ = '0.1.0'
-
-
-def _version_tuple(value):
-    return tuple(int(part) for part in value.split('.'))
-
+__version__ = '0.1.1'
 
 class Biblioman(Source):
 
@@ -38,7 +33,7 @@ class Biblioman(Source):
     description = _('Downloads metadata and covers from biblioman.chitanka.info')
     supported_platforms = ['windows', 'osx', 'linux']
     author = 'Edin User'
-    version = _version_tuple(__version__)
+    version = (0, 1, 1)
     minimum_calibre_version = (6, 0, 0)
 
     capabilities = frozenset(['identify', 'cover'])

@@ -61,7 +61,7 @@
 Резултатът е:
 
 ```text
-dist/BibliomanMetadata-0.1.0.zip
+dist/BibliomanMetadata-0.1.1.zip
 ```
 
 ## Инсталиране в Calibre
