@@ -21,11 +21,11 @@ except ImportError:
 from calibre import prepare_string_for_xml
 from calibre.ebooks.metadata import check_isbn
 from calibre.ebooks.metadata.book.base import Metadata
-from calibre.ebooks.metadata.sources.base import Source
+from calibre.ebooks.metadata.sources.base import Option, Source
 from calibre.utils.localization import _
 
 
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
 class Biblioman(Source):
 
@@ -33,7 +33,7 @@ class Biblioman(Source):
     description = _('Downloads metadata and covers from biblioman.chitanka.info')
     supported_platforms = ['windows', 'osx', 'linux']
     author = 'Edin User'
-    version = (0, 1, 1)
+    version = (0, 2, 0)
     minimum_calibre_version = (6, 0, 0)
 
     capabilities = frozenset(['identify', 'cover'])
@@ -53,6 +53,15 @@ class Biblioman(Source):
     cached_cover_url_is_reliable = True
     prefer_results_with_isbn = True
     can_get_multiple_covers = False
+    options = (
+        Option(
+            'download_series',
+            'bool',
+            False,
+            _('Download series metadata'),
+            _('Set Calibre series and series number from Biblioman author series.'),
+        ),
+    )
 
     BASE_URL = 'https://biblioman.chitanka.info'
     SEARCH_URL = BASE_URL + '/books.json?q=%s'
@@ -185,26 +194,30 @@ class Biblioman(Source):
                 candidates.append(book)
                 seen.add(book.get('id'))
 
-        queries = []
         if isbn:
-            queries.append('isbn: %s' % isbn)
-        text_query = self._build_text_query(title, authors)
-        if text_query:
-            queries.append(text_query)
-        if title:
-            queries.append('title: %s' % title)
-        if authors:
-            queries.append('author: %s' % authors[0])
+            self._add_books(
+                candidates, seen, self._search(log, 'isbn: %s' % isbn, timeout)
+            )
 
-        for query in queries:
-            if abort.is_set():
-                break
-            for book in self._search(log, query, timeout):
-                book_id = book.get('id')
-                if not book_id or book_id in seen:
-                    continue
-                seen.add(book_id)
-                candidates.append(book)
+        title_matches = []
+        if title and not abort.is_set():
+            title_matches = self._title_matches(
+                self._search(log, title, timeout), title
+            )
+            self._add_books(candidates, seen, title_matches)
+
+        # Biblioman accepts field searches such as ``author:``, but it does not
+        # combine them with a title search.  Use author results only when the
+        # title search found no structured title match, then filter locally.
+        if authors and not abort.is_set() and not title_matches:
+            author_query = 'author: %s' % authors[0]
+            if title:
+                author_books = self._search_author_for_title(
+                    log, author_query, title, timeout, abort
+                )
+            else:
+                author_books = self._search(log, author_query, timeout)
+            self._add_books(candidates, seen, author_books)
 
         return sorted(
             candidates,
@@ -220,6 +233,53 @@ class Biblioman(Source):
         if not data:
             return []
         return data.get('results') or []
+
+    def _search_author_for_title(self, log, query, title, timeout, abort):
+        url = self.SEARCH_URL % quote_plus(query)
+        data = self._get_json(log, url, timeout)
+        if not data:
+            return []
+
+        try:
+            nb_pages = int(data.get('nbPages') or 1)
+        except (TypeError, ValueError):
+            nb_pages = 1
+
+        for page in range(1, nb_pages + 1):
+            if abort.is_set():
+                break
+            page_data = data if page == 1 else self._get_json(
+                log, '%s&page=%d' % (url, page), timeout
+            )
+            if page_data:
+                matches = self._title_matches(page_data.get('results') or [], title)
+                if matches:
+                    return matches
+        return []
+
+    def _add_books(self, candidates, seen, books):
+        for book in books:
+            book_id = book.get('id')
+            if not book_id or book_id in seen:
+                continue
+            seen.add(book_id)
+            candidates.append(book)
+
+    def _title_matches(self, books, title):
+        wanted_title = self._normalize_text(title)
+        if not wanted_title:
+            return []
+
+        matches = []
+        for book in books:
+            for key in ('title', 'altTitle', 'volumeTitle', 'subtitle', 'subtitle2'):
+                candidate_title = self._normalize_text(book.get(key))
+                if candidate_title and (
+                    wanted_title in candidate_title or candidate_title in wanted_title
+                ):
+                    matches.append(book)
+                    break
+        return matches
 
     def _get_json(self, log, url, timeout):
         try:
@@ -275,7 +335,7 @@ class Biblioman(Source):
             mi.tags = tags
 
         series_name, series_index = self._series_data(book)
-        if series_name:
+        if series_name and self.prefs.get('download_series', True):
             mi.series = series_name
             if series_index is not None:
                 mi.series_index = series_index
@@ -331,10 +391,16 @@ class Biblioman(Source):
         return title
 
     def _series_data(self, book):
-        series_name = self._clean_value(book.get('series')) or self._clean_value(book.get('sequence'))
+        # Calibre has one standard series field. Biblioman's ``series`` is the
+        # author series, while ``sequence`` is the publisher series. Prefer
+        # the author series, as it groups a work within reading order.
+        series_name = self._clean_value(book.get('series'))
+        raw_index = book.get('seriesNr')
+        if not series_name:
+            series_name = self._clean_value(book.get('sequence'))
+            raw_index = book.get('sequenceNr')
         if not series_name:
             return (None, None)
-        raw_index = book.get('seriesNr') or book.get('sequenceNr')
         try:
             return (series_name, float(raw_index))
         except (TypeError, ValueError):
@@ -385,14 +451,6 @@ class Biblioman(Source):
                 paragraph = prepare_string_for_xml(paragraph).replace('\n', '<br/>')
                 paragraphs.append('<p>%s</p>' % paragraph)
         return '\n'.join(paragraphs) or None
-
-    def _build_text_query(self, title, authors):
-        parts = []
-        if title:
-            parts.append(title)
-        if authors:
-            parts.append(authors[0])
-        return ' '.join(part for part in parts if part).strip() or None
 
     def _split_people(self, value):
         return self._split_multi_value(value)
