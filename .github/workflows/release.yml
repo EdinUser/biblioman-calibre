@@ -19,6 +19,9 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests
+
       - name: Build versioned plugin zip
         run: ./build-plugin.sh "${{ github.event.release.tag_name }}"
 
